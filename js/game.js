@@ -146,13 +146,16 @@ function shootProjectile(player) {
         var bomb;
         if (player.flipX == 0) {
             bomb = spits.create(player.x, player.y, 'projectile');
+            bomb.flipX = -1;
             bomb.setVelocity(-1000, 0);
         }
         else {
             bomb = spits.create(player.x, player.y, 'projectile');
+            bomb.flipX = 0;
             bomb.setVelocity(1000, 0);
         }
         bomb.allowGravity = false;
+        bomb.body.setGravity(0);
         bomb.setCollideWorldBounds(false);
 
         if (player == player1) {
