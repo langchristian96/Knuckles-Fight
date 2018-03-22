@@ -103,6 +103,7 @@ function addCollidersAndGravity() {
     this.physics.add.collider(player2, spits, hitBomb, null, this);
     this.physics.add.collider(player1, spits, hitBomb, null, this);
     this.physics.add.collider(spits, platforms, dissappear, null, this);
+    this.physics.add.collider(player1, player2);
 }
 
 function create() {
