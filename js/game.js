@@ -26,18 +26,12 @@ var scoreText2;
 var finalText;
 var shootAudio;
 var winAudio;
-var ctx = new AudioContext();
 var gameOver = false;
-var explosionEffect = {
-    frequency: 16,
-    decay: 1,
-    type: 'sawtooth',
-    dissonance: 50
-};
+var flipFlop2 = false, flipFlop1 = false;
 
 function preload() {
     this.load.audio('shoot', './assets/audio/shoot_cutted.mp3');
-    this.load.audio('win', './assets/audio/SPIT.mp3');
+    this.load.audio('win', './assets/audio/win.mp3');
     this.load.image('sky', './assets/sky.png');
     this.load.image('ground', './assets/platform.png');
     this.load.image('vertical', './assets/vertical.png');
@@ -47,53 +41,39 @@ function preload() {
     this.load.spritesheet('dude', './assets/smaller.png', {frameWidth: 117, frameHeight: 108});
 }
 
-function create() {
-    shootAudio = this.sound.add('shoot');
-    winAudio = this.sound.add('win');
-    this.add.image(400, 300, 'sky');
-    this.add.image(1200, 300, 'sky');
-    // this.sound.setDecodedCallback([ shootAudio ], start, this);
-    scoreText1 = this.add.text(16, 16, 'score: 0', {fontSize: '32px', fill: '#000'});
-    scoreText2 = this.add.text(1350, 16, 'score: 0', {fontSize: '32px', fill: '#000'});
-    finalText = this.add.text(750, 300, '', {fontSize: '32px', fill: '#000'});
-    platforms = this.physics.add.staticGroup();
-    spits = this.physics.add.group();
-    cursors = this.input.keyboard.createCursorKeys();
+function createPlatforms() {
     platforms.create(400, 568, 'ground').setScale(2).refreshBody();
     platforms.create(1200, 568, 'ground').setScale(2).refreshBody();
-
     platforms.create(760, 600, 'vertical');
     platforms.create(600, 400, 'ground');
     platforms.create(900, 400, 'ground');
     platforms.create(50, 250, 'ground');
     platforms.create(1450, 250, 'ground');
     platforms.create(750, 220, 'ground');
+}
 
-    player2 = this.physics.add.sprite(1400, 450, 'dude');
+function createPlayer(game, x, y) {
+    player = game.physics.add.sprite(x, y, 'dude');
+    player.setBounce(0.2);
+    player.setCollideWorldBounds(true);
+    player.body.setSize(100, 70);
+    return player;
+}
 
-    player2.setBounce(0.2);
-    player2.setCollideWorldBounds(true);
-    player2.body.setSize(100,70);
-
-    player1 = this.physics.add.sprite(100, 450, 'dude');
-
-    player1.setBounce(0.2);
-    player1.setCollideWorldBounds(true);
-    player1.body.setSize(100,70);
-
-
+function addKeys() {
     upButton = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
     shootButton = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.L);
     leftButton = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
     rightButton = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
+}
 
+function createAnimations() {
     this.anims.create({
         key: 'left',
         frames: [{key: 'dude', frame: 2}],
         frameRate: 10,
         repeat: -1
     });
-
     this.anims.create({
         key: 'turn',
         frames: [{key: 'dude', frame: 2}],
@@ -112,24 +92,81 @@ function create() {
         frameRate: 10,
         repeat: -1
     });
+}
+
+function addCollidersAndGravity() {
     this.physics.add.collider(player2, platforms);
     player2.body.setGravityY(300);
-
     this.physics.add.collider(player1, platforms);
     player1.body.setGravityY(300);
-
-
     bombs = this.physics.add.group();
-//
-//        this.physics.add.collider(spits, platforms);
-
-
     this.physics.add.collider(player2, spits, hitBomb, null, this);
     this.physics.add.collider(player1, spits, hitBomb, null, this);
     this.physics.add.collider(spits, platforms, dissappear, null, this);
 }
 
-var flipFlop2, flipFlop1;
+function create() {
+    shootAudio = this.sound.add('shoot');
+    winAudio = this.sound.add('win');
+    this.add.image(400, 300, 'sky');
+    this.add.image(1200, 300, 'sky');
+    scoreText1 = this.add.text(16, 16, 'score: 0', {fontSize: '32px', fill: '#000'});
+    scoreText2 = this.add.text(1350, 16, 'score: 0', {fontSize: '32px', fill: '#000'});
+    finalText = this.add.text(750, 300, '', {fontSize: '32px', fill: '#000'});
+    platforms = this.physics.add.staticGroup();
+    spits = this.physics.add.group();
+    cursors = this.input.keyboard.createCursorKeys();
+
+    createPlatforms();
+
+    player1 = createPlayer(this, 100, 450);
+    player2 = createPlayer(this, 1400, 450);
+    addKeys.call(this);
+    createAnimations.call(this);
+    addCollidersAndGravity.call(this);
+}
+
+function shootProjectile(player) {
+    var flipFlop;
+    if (player == player1) {
+        flipFlop = flipFlop1;
+    }
+    else {
+        flipFlop = flipFlop2;
+    }
+    if (!flipFlop) {
+        if (player == player1) {
+            flipFlop1 = true;
+        }
+        else {
+            flipFlop2 = true;
+        }
+        player.anims.play('spitCharacter', true);
+        shootAudio.play();
+        var bomb;
+        if (player.flipX == 0) {
+            bomb = spits.create(player.x, player.y, 'projectile');
+            bomb.setVelocity(-1000, 0);
+        }
+        else {
+            bomb = spits.create(player.x, player.y, 'projectile');
+            bomb.setVelocity(1000, 0);
+        }
+        bomb.allowGravity = false;
+        bomb.setCollideWorldBounds(false);
+
+        if (player == player1) {
+            sleep(1500).then(function () {
+                flipFlop1 = false;
+            });
+        }
+        else {
+            sleep(1500).then(function () {
+                flipFlop2 = false;
+            });
+        }
+    }
+}
 
 function update() {
 
@@ -154,28 +191,8 @@ function update() {
     }
 
     if (shootButton.isDown) {
-
-
-        shootAudio.play();
-        player2.anims.play('spitCharacter', true);
-        if (!flipFlop2) {
-            var bomb = spits.create(player2.x, player2.y, 'projectile');
-//                bomb.setBounce(1);
-            bomb.setCollideWorldBounds(true);
-            if (player2.flipX == 0) {
-                bomb.setVelocity(-1200, 0);
-            }
-            else {
-
-                bomb.setVelocity(1200, 0);
-            }
-            bomb.allowGravity = false;
-            bomb.setCollideWorldBounds(false);
-            flipFlop2 = true;
-        }
-
+        shootProjectile(player2);
     }
-
 
     if (leftButton.isDown) {
         player1.setVelocityX(-160);
@@ -189,43 +206,11 @@ function update() {
     }
     else {
         player1.setVelocityX(0);
-
         player1.anims.play('turn');
     }
 
     if (cursors.space.isDown) {
-
-        player1.anims.play('spitCharacter', true);
-        shootAudio.play();
-        if (!flipFlop1) {
-            var bomb;
-            if (player1.flipX == 0) {
-                bomb = spits.create(player1.x, player1.y, 'projectile');
-                //                bomb.setBounce(1);
-//                    bomb.setCollideWorldBounds(true);
-                bomb.setVelocity(-1000, 0);
-            }
-            else {
-                bomb = spits.create(player1.x, player1.y, 'projectile');
-                //                bomb.setBounce(1);
-//                    bomb.setCollideWorldBounds(true);
-
-                bomb.setVelocity(1000, 0);
-            }
-            bomb.allowGravity = false;
-            bomb.setCollideWorldBounds(false);
-            flipFlop1 = true;
-        }
-
-    }
-
-
-    if (cursors.space.isUp) {
-        flipFlop1 = false;
-    }
-
-    if (shootButton.isUp) {
-        flipFlop2 = false;
+        shootProjectile(player1);
     }
 
     if (cursors.up.isDown && player2.body.touching.down) {
@@ -264,7 +249,6 @@ function hitBomb(player, bomb) {
         player1.anims.play('spitCharacter');
         player1.anims.play('spitCharacter');
     }
-//        player.setTint(0xff0000);
     player.anims.play('turn');
     gameOver = true;
     var bla = this;
@@ -284,7 +268,6 @@ function hitBomb(player, bomb) {
         player2.x = 1400;
         player2.y = 450;
     });
-//        player
 }
 
 function dissappear(spit, platform) {
