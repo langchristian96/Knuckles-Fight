@@ -242,11 +242,23 @@ function hitBomb(player, bomb) {
         score2 += 1;
         scoreText2.setText('Score: ' + score2);
         finalText.setText('Player 2 won!');
+        player2.anims.play('spitCharacter');
+        player2.anims.play('spitCharacter');
+        player2.anims.play('spitCharacter');
+        player2.anims.play('spitCharacter');
+        player2.anims.play('spitCharacter');
+        player2.anims.play('spitCharacter');
     }
     else {
         score1 += 1;
         scoreText1.setText('Score: ' + score1);
         finalText.setText('Player 1 won!');
+        player1.anims.play('spitCharacter');
+        player1.anims.play('spitCharacter');
+        player1.anims.play('spitCharacter');
+        player1.anims.play('spitCharacter');
+        player1.anims.play('spitCharacter');
+        player1.anims.play('spitCharacter');
     }
 //        player.setTint(0xff0000);
     player.anims.play('turn');
