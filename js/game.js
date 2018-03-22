@@ -25,6 +25,7 @@ var score2 = 0;
 var scoreText2;
 var finalText;
 var shootAudio;
+var winAudio;
 var ctx = new AudioContext();
 var gameOver = false;
 var explosionEffect = {
@@ -35,7 +36,8 @@ var explosionEffect = {
 };
 
 function preload() {
-    this.load.audio('shoot', './assets/audio/shoot_cutted.mp3')
+    this.load.audio('shoot', './assets/audio/shoot_cutted.mp3');
+    this.load.audio('win', './assets/audio/SPIT.mp3');
     this.load.image('sky', './assets/sky.png');
     this.load.image('ground', './assets/platform.png');
     this.load.image('vertical', './assets/vertical.png');
@@ -46,7 +48,8 @@ function preload() {
 }
 
 function create() {
-    // shootAudio = this.add.sound('shoot');
+    shootAudio = this.sound.add('shoot');
+    winAudio = this.sound.add('win');
     this.add.image(400, 300, 'sky');
     this.add.image(1200, 300, 'sky');
     // this.sound.setDecodedCallback([ shootAudio ], start, this);
@@ -153,8 +156,8 @@ function update() {
     if (shootButton.isDown) {
 
 
+        shootAudio.play();
         player2.anims.play('spitCharacter', true);
-//            shootAudio.play();
         if (!flipFlop2) {
             var bomb = spits.create(player2.x, player2.y, 'projectile');
 //                bomb.setBounce(1);
@@ -193,7 +196,7 @@ function update() {
     if (cursors.space.isDown) {
 
         player1.anims.play('spitCharacter', true);
-        //            shootAudio.play();
+        shootAudio.play();
         if (!flipFlop1) {
             var bomb;
             if (player1.flipX == 0) {
@@ -237,6 +240,7 @@ function update() {
 
 function hitBomb(player, bomb) {
     this.physics.pause();
+    winAudio.play();
     if (player == player1) {
 
         score2 += 1;
