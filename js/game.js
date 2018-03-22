@@ -70,12 +70,13 @@ function create() {
 
     player2.setBounce(0.2);
     player2.setCollideWorldBounds(true);
-
+    player2.body.setSize(100,70);
 
     player1 = this.physics.add.sprite(100, 450, 'dude');
 
     player1.setBounce(0.2);
     player1.setCollideWorldBounds(true);
+    player1.body.setSize(100,70);
 
 
     upButton = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
